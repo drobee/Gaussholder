@@ -131,13 +131,9 @@ function generate_placeholders_on_save( $metadata, $attachment_id ) {
 
 	foreach ( $sizes as $size => $radius ) {
 		$data = generate_placeholder( $attachment_id, $size, $radius );
-		if ( empty( $data ) ) {
+		if ( !$data ) {
 			continue;
 		}
-
-		// Comma-separated data, width, and height
-		$for_database = sprintf( '%s,%d,%d', base64_encode( $data[0] ), $data[1], $data[2] );
-		update_post_meta( $attachment_id, META_PREFIX . $size, $for_database );
 	}
 
 	return $metadata;
@@ -176,7 +172,7 @@ function get_size_data( $size ) {
 }
 
 /**
- * Generate a placeholder at a given size.
+ * Generate and save a placeholder at a given size.
  *
  * @param int $id Attachment ID.
  * @param string $size Image size.
@@ -193,6 +189,9 @@ function generate_placeholder( $id, $size, $radius ) {
 	$img       = wp_get_attachment_image_src( $id, $size );
 	$uploads   = wp_upload_dir();
 	$path      = str_replace( $uploads['baseurl'], $uploads['basedir'], $img[0] );
+	$filetype  = wp_check_filetype( $path );
+	$filename  = str_replace( '.' . $filetype['ext'], '_lqip.' . $filetype['ext'], $path );
 
-	return JPEG\data_for_file( $path, $radius );
+	//return JPEG\data_for_file( $path, $radius );
+	return JPEG\save_file( $path, $filename, $radius );
 }

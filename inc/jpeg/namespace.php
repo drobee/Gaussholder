@@ -214,3 +214,28 @@ function data_for_file( $file, $radius ) {
 
 	return array( $scaled_stripped, $width, $height );
 }
+
+function save_file( $file, $filename, $radius ) {
+	$editor = new Imagick( $file );
+	$size = $editor->getImageGeometry();
+
+	// Normalise the density to 72dpi
+	$editor->setImageResolution( 72, 72 );
+
+	// Set sampling factors to constant
+	$editor->setSamplingFactors(array('1x1', '1x1', '1x1'));
+
+	// Ensure we use default Huffman tables
+	$editor->setOption('jpeg:optimize-coding', false);
+
+	// Strip unnecessary header data
+	$editor->stripImage();
+
+	// Adjust by scaling factor
+	$width = floor( $size['width'] / $radius );
+	$height = floor( $size['height'] / $radius );
+	$editor->scaleImage( $width, $height );
+
+	// Save file
+	return $editor->writeImage($filename);
+}
